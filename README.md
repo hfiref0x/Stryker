@@ -16,9 +16,9 @@
 
 #### Usage
 
-STRYKER -dse on | off
-STRYKER -prot ProcessID (ProcessID in decimal form)
-STRYKER -load filename
+###### STRYKER -dse on | off
+###### STRYKER -prot ProcessID (ProcessID in decimal form)
+###### STRYKER -load filename
 * -dse   - turn off/on Driver Signature Enforcement (similar to DSEFix functionality);
 * -prot  - modify process object of given ProocessID;
 * -load  - load input file as code buffer to kernel mode and run it (similar to TDL functionality).
@@ -73,20 +73,20 @@ Using this program might render your computer into BSOD. Compiled binary and sou
 ANY USE OF THE SOFTWARE IS ENTIRELY AT YOUR OWN RISK.
 
 #  Short answers on possible Frequency Asked Questions
-Q: Can anything else except Process Explorer driver be used to execute shellcode?
-A: Yes, but you have to carefully examine candidate to make sure it can store and execute shellcode.
++ Q: Can anything else except Process Explorer driver be used to execute shellcode?
++ A: Yes, but you have to carefully examine candidate to make sure it can store and execute shellcode.
 
-Q: What about newest versions of CPU-Z? Can they be used to read/write physical memory, CPU control registers?
-A: CPU-Z driver was redesigned to address CVE-2017-15303 and some functionality is no longer available. However old versions of CPU-Z may have the same functionality.
++ Q: What about newest versions of CPU-Z? Can they be used to read/write physical memory, CPU control registers?
++ A: CPU-Z driver was redesigned to address CVE-2017-15303 and some functionality is no longer available. However old versions of CPU-Z may have the same functionality.
 
-Q: Are the any other similar drivers with same functionality as CPU-Z?
-A: Yes, a lot of them, e.g. WinIO.sys, AsIO64.sys, Ammap.sys. They all generally provide read/write access to the physical memory in different ways (\Device\PhysicalMemory).
++ Q: Are the any other similar drivers with same functionality as CPU-Z?
++ A: Yes, a lot of them, e.g. WinIO.sys, AsIO64.sys, Ammap.sys. They all generally provide read/write access to the physical memory in different ways (\Device\PhysicalMemory).
 
-Q: Does this work on every Windows version? Including not released yet?
-A: It was tested on Windows 7 / 8.1 / 10 up to RS3. Working in future versions is unlikely.
++ Q: Does this work on every Windows version? Including not released yet?
++ A: It was tested on Windows 7 / 8.1 / 10 up to RS3. Working in future versions is unlikely.
 
-Q: Will be support of Windows 10 NEXT or Windows XX NEXT added?
-A: Unlikely.
++ Q: Will be support of Windows 10 NEXT or Windows XX NEXT added?
++ A: Unlikely.
 
 # References
 
