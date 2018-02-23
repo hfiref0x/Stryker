@@ -58,7 +58,7 @@ Depending on command Stryker will either work as DSEFix/TDL or modify kernel mod
 
 When in -load mode Stryker will use 3rd party signed driver from SysInternals Process Explorer software (driver version 1.52) to place a small loader shellcode inside it IRP_MJ_DEVICE_CONTROL/IRP_MJ_CREATE/IRP_MJ_CLOSE handler. This is done by overwriting physical memory where this handler code located and triggering it by calling driver IRP_MJ_CREATE (CreateFile call). Your mapped "driver" will run with PASSIVE_LEVEL IRQL.
 
-Also with slight modification shellcode can be simple to execute your small piece of code in the kernel mode (not implemented in this tool).
+Also with slight modification shellcode can be used to simple execute your small piece of code in the kernel mode (not implemented in this tool).
 
 # Build 
 

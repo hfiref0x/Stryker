@@ -38,7 +38,9 @@ BOOL cpuz_readcrX(
 
     DWORD LastError;
 
-    if (Index == 4)  //cr4 not supported
+    *Value = 0;
+
+    if (Index == 4) //cr4 not supported       
         return FALSE;
 
     if (DeviceIoControl(g_hDevice, IOCTL_CPUZ_READ_CRX_REGISTER,
