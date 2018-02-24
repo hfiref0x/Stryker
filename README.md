@@ -20,7 +20,7 @@
 ###### STRYKER -prot ProcessID (ProcessID in decimal form)
 ###### STRYKER -load filename
 * -dse   - turn off/on Driver Signature Enforcement (similar to DSEFix functionality);
-* -prot  - modify process object of given ProocessID;
+* -prot  - modify process object of given ProcessID;
 * -load  - load input file as code buffer to kernel mode and run it (similar to TDL functionality).
 
 Example:
@@ -56,7 +56,7 @@ It uses CPU-Z (https://www.cpuid.com/softwares/cpu-z.html) internal driver (vers
 
 Depending on command Stryker will either work as DSEFix/TDL or modify kernel mode process objects (EPROCESS). 
 
-When in -load mode Stryker will use 3rd party signed driver from SysInternals Process Explorer software (driver version 1.52) to place a small loader shellcode inside it IRP_MJ_DEVICE_CONTROL/IRP_MJ_CREATE/IRP_MJ_CLOSE handler. This is done by overwriting physical memory where this handler code located and triggering it by calling driver IRP_MJ_CREATE (CreateFile call). Your mapped "driver" will run with PASSIVE_LEVEL IRQL.
+When in -load mode Stryker will use 3rd party signed driver from SysInternals Process Explorer software (driver version 1.52) to place a small loader shellcode inside it IRP_MJ_DEVICE_CONTROL/IRP_MJ_CREATE/IRP_MJ_CLOSE handler. This is done by overwriting physical memory where Process Explorer dispatch handler located and triggering it by calling driver IRP_MJ_CREATE (CreateFile call). Triggered shellcode will map input driver as code buffer to kernel mode and run it, current IRQL will be PASSIVE_LEVEL.
 
 Also with slight modification shellcode can be used to simple execute your small piece of code in the kernel mode (not implemented in this tool).
 
@@ -80,7 +80,7 @@ ANY USE OF THE SOFTWARE IS ENTIRELY AT YOUR OWN RISK.
 + A: CPU-Z driver was redesigned to address CVE-2017-15303 and some functionality is no longer available. However old versions of CPU-Z may have the same functionality.
 
 + Q: Are the any other similar drivers with same functionality as CPU-Z?
-+ A: Yes, a lot of them, e.g. WinIO.sys, AsIO64.sys, Ammap.sys. They all generally provide read/write access to the physical memory in different ways (\Device\PhysicalMemory).
++ A: Yes, a lot of them, e.g. WinIO.sys, AsIO64.sys, Asmmap64.sys. They all generally provide read/write access to the physical memory in different ways (\Device\PhysicalMemory).
 
 + Q: Does this work on every Windows version? Including not released yet?
 + A: It was tested on Windows 7 / 8.1 / 10 up to RS3. Working in future versions is unlikely.
