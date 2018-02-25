@@ -4,9 +4,9 @@
 *
 *  TITLE:       DRVMAP.C
 *
-*  VERSION:     1.00
+*  VERSION:     1.01
 *
-*  DATE:        10 Feb 2018
+*  DATE:        24 Feb 2018
 *
 *  Driver mapping routines.
 *
@@ -265,6 +265,28 @@ NTSTATUS NTAPI PsCreateSystemThreadTest(
     return STATUS_SUCCESS;
 }
 
+IO_STACK_LOCATION g_testIostl;
+
+/*
+* IoGetCurrentIrpStackLocationTest
+*
+* Purpose:
+*
+* User mode test routine.
+*
+*/
+FORCEINLINE
+PIO_STACK_LOCATION
+IoGetCurrentIrpStackLocationTest(
+    _In_ PIRP Irp
+)
+{
+    UNREFERENCED_PARAMETER(Irp);
+    g_testIostl.MajorFunction = IRP_MJ_CREATE;
+    return &g_testIostl;
+}
+
+
 /*
 * SizeOfProc
 *
@@ -347,7 +369,11 @@ NTSTATUS NTAPI FakeDispatchRoutine(
 
     UNREFERENCED_PARAMETER(DeviceObject);
 
+#ifdef _DEBUG
+    StackLocation = IoGetCurrentIrpStackLocationTest(Irp);
+#else
     StackLocation = IoGetCurrentIrpStackLocation(Irp);
+#endif
 
     if (StackLocation->MajorFunction == IRP_MJ_CREATE) {
 
@@ -514,11 +540,13 @@ BOOL StorePayload(
     UNICODE_STRING ustr;
     WCHAR szMsg[100];
 
+    ULONG DllCharacteristics = IMAGE_FILE_EXECUTABLE_IMAGE;
+
     //
     // Map input file as image.
     //
     RtlInitUnicodeString(&ustr, lpFileName);
-    status = LdrLoadDll(NULL, NULL, &ustr, &Image);
+    status = LdrLoadDll(NULL, &DllCharacteristics, &ustr, &Image);
     if ((!NT_SUCCESS(status)) || (Image == NULL)) {
         supPrintText(TEXT("\r\n[!] Error while loading input driver file"));
         return FALSE;
@@ -795,7 +823,8 @@ VOID SetupShellCode(
         //
         // Shellcode test, unused in Release build.
         //
-       /* g_ShellCode->Import.ZwClose = &NtClose;
+#ifdef _DEBUG
+        g_ShellCode->Import.ZwClose = &NtClose;
         g_ShellCode->Import.ZwOpenKey = &NtOpenKey;
         g_ShellCode->Import.ZwQueryValueKey = &NtQueryValueKey;
         g_ShellCode->Import.ExAllocatePool = &ExAllocatePoolTest;
@@ -803,7 +832,9 @@ VOID SetupShellCode(
         g_ShellCode->Import.IofCompleteRequest = &IofCompleteRequestTest;
         g_ShellCode->Import.PsCreateSystemThread = &PsCreateSystemThreadTest;
 
-        FakeDeviceIoControl(NULL, NULL, g_ShellCode);*/
+        FakeDispatchRoutine(NULL, NULL, g_ShellCode);
+        ExitProcess(0);
+#endif
 
         ProcedureSize = SizeOfProc((PBYTE)FakeDispatchRoutine);
         if (ProcedureSize != 0) {
@@ -824,7 +855,6 @@ VOID SetupShellCode(
         //((void(*)())g_ShellCode->InitCode)();
 
     } while (bCond);
-
 }
 
 /*
